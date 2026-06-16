@@ -79,6 +79,19 @@ const info = <const>{
           type: ParameterType.STRING,
           default: undefined,
         },
+        
+        /** The time in milliseconds when the image should be highlighted. */
+        time_onset : {
+          type: ParameterType.INT,
+          default: 0  
+        }, 
+
+        /** The time in milliseconds when the image should stop being highlighted. */
+        time_offset : {
+          type: ParameterType.INT,
+          default: 0  
+        }, 
+
       }
     },
 
