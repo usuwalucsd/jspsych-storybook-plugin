@@ -150,7 +150,7 @@ const info = <const>{
           type: ParameterType.STRING,
           default: undefined,
         },
-        /** Animation type: 'wiggle', 'loom', 'translate', 'fadeIn', 'fadeOut' */
+        /** Animation type: 'wiggle', 'loom', 'translate', 'fadeIn', 'fadeOut', 'bounce' */
         type: {
           type: ParameterType.STRING,
           default: undefined,
@@ -291,6 +291,14 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
         from { opacity: 1; }
         to   { opacity: 0; }
       }
+      @keyframes storybook-bounce {
+        0%, 100% { transform: translateY(0); }
+        25%      { transform: translateY(-60px); }
+        50%      { transform: translateY(0); }
+        65%      { transform: translateY(-30px); }
+        80%      { transform: translateY(0); }
+        90%      { transform: translateY(-12px); }
+      }
     `;
     document.head.appendChild(style);
   }
@@ -357,6 +365,9 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
           el.style.animation = `storybook-fadeIn ${dur}ms ease-in-out forwards`;
         } else if (anim.type === 'fadeOut') {
           el.style.animation = `storybook-fadeOut ${dur}ms ease-in-out forwards`;
+        } else if (anim.type === 'bounce') {
+          el.style.animation = `storybook-bounce ${dur}ms ease-in-out`;
+          el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
         } else if (anim.type === 'translate') {
           el.style.transition = `transform ${dur / 2}ms ease-in-out`;
           el.style.transform = `translate(${anim.x ?? 0}px, ${anim.y ?? 0}px)`;
