@@ -92,6 +92,7 @@
     show_progress_bar: true,
     total_pages:       TOTAL_PAGES,
     pages_completed:   i + 1,
+    ...(i + 1 >= TOTAL_PAGES ? { celebration_sound: 'sound/tada.mp3' } : {}),
   }));
 
   jsPsych.run([start_screen, ...timeline]);

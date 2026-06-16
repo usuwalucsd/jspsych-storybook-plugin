@@ -140,6 +140,12 @@ const info = <const>{
       default: 0,
     },
 
+    /** Audio file to play when the celebration banner appears on the final page. */
+    celebration_sound: {
+      type: ParameterType.STRING,
+      default: null,
+    },
+
     /** An array of animations to apply to images. Each object contains image_id, type, time_onset, duration, and optional x/y for translate. */
     animations: {
       type: ParameterType.COMPLEX,
@@ -211,7 +217,7 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
 
   constructor(private jsPsych: JsPsych) {}
 
-  private renderProgressBar(display_element: HTMLElement, totalPages: number, pagesCompleted: number): void {
+  private renderProgressBar(display_element: HTMLElement, totalPages: number, pagesCompleted: number, celebrationSound?: string): void {
     if (!document.getElementById('storybook-star-keyframes')) {
       const style = document.createElement('style');
       style.id = 'storybook-star-keyframes';
@@ -220,6 +226,11 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
           0%   { transform: scale(0.2); }
           60%  { transform: scale(1.4); }
           100% { transform: scale(1); }
+        }
+        @keyframes storybook-celebrate {
+          0%   { opacity: 0; transform: translateX(-50%) scale(0.5); }
+          70%  { transform: translateX(-50%) scale(1.08); }
+          100% { opacity: 1; transform: translateX(-50%) scale(1); }
         }
       `;
       document.head.appendChild(style);
@@ -245,6 +256,23 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
     }
 
     display_element.appendChild(bar);
+
+    if (pagesCompleted >= totalPages) {
+      const banner = document.createElement('div');
+      banner.textContent = '⭐  Great job!  ⭐';
+      banner.style.cssText = `
+        position: absolute; top: 68px; left: 50%; white-space: nowrap;
+        font-size: 26px; font-family: Georgia, serif; font-weight: bold;
+        color: #FFD700; z-index: 100; opacity: 0;
+        animation: storybook-celebrate 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+      `;
+      display_element.appendChild(banner);
+
+      if (celebrationSound) {
+        const audio = new Audio(celebrationSound);
+        audio.play().catch(() => {});
+      }
+    }
 
     if (typeof window.confetti !== 'function') return;
 
@@ -311,7 +339,7 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
 
   trial(display_element: HTMLElement, trial: TrialType<Info>) {
     if (trial.show_progress_bar) {
-      this.renderProgressBar(display_element, trial.total_pages, trial.pages_completed);
+      this.renderProgressBar(display_element, trial.total_pages, trial.pages_completed, trial.celebration_sound);
     }
 
     this.injectAnimationStyles();
