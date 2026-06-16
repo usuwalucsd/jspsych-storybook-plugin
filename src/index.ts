@@ -140,6 +140,44 @@ const info = <const>{
       default: 0,
     },
 
+    /** An array of animations to apply to images. Each object contains image_id, type, time_onset, duration, and optional x/y for translate. */
+    animations: {
+      type: ParameterType.COMPLEX,
+      array: true,
+      nested: {
+        /** The ID of the image to animate. Must match an ID in the images array. */
+        image_id: {
+          type: ParameterType.STRING,
+          default: undefined,
+        },
+        /** Animation type: 'wiggle', 'loom', 'translate', 'fadeIn', 'fadeOut' */
+        type: {
+          type: ParameterType.STRING,
+          default: undefined,
+        },
+        /** Time in milliseconds when the animation starts. */
+        time_onset: {
+          type: ParameterType.INT,
+          default: 0,
+        },
+        /** Duration of the animation in milliseconds. */
+        duration: {
+          type: ParameterType.INT,
+          default: 1000,
+        },
+        /** X offset in pixels for translate animation. */
+        x: {
+          type: ParameterType.INT,
+          default: 0,
+        },
+        /** Y offset in pixels for translate animation. */
+        y: {
+          type: ParameterType.INT,
+          default: 0,
+        },
+      },
+    },
+
 
 
   },
@@ -227,9 +265,112 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
     }
   }
 
+  private injectAnimationStyles(): void {
+    if (document.getElementById('storybook-animation-keyframes')) return;
+    const style = document.createElement('style');
+    style.id = 'storybook-animation-keyframes';
+    style.textContent = `
+      @keyframes storybook-wiggle {
+        0%, 100% { transform: rotate(0deg); }
+        15%       { transform: rotate(-12deg); }
+        30%       { transform: rotate(12deg); }
+        45%       { transform: rotate(-8deg); }
+        60%       { transform: rotate(8deg); }
+        75%       { transform: rotate(-4deg); }
+        90%       { transform: rotate(4deg); }
+      }
+      @keyframes storybook-loom {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.6); }
+      }
+      @keyframes storybook-fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes storybook-fadeOut {
+        from { opacity: 1; }
+        to   { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   trial(display_element: HTMLElement, trial: TrialType<Info>) {
     if (trial.show_progress_bar) {
       this.renderProgressBar(display_element, trial.total_pages, trial.pages_completed);
+    }
+
+    this.injectAnimationStyles();
+
+    // Image rendering
+    const imageElements: Record<string, HTMLImageElement> = {};
+    for (const img of trial.images ?? []) {
+      const el = document.createElement('img');
+      el.src = img.src;
+      el.style.cssText = `
+        position: absolute;
+        left: ${img.x_pos}%;
+        top: ${img.y_pos}%;
+        width: ${img.width}%;
+        height: ${img.height}%;
+        object-fit: contain;
+        ${img.time_onset > 0 ? 'opacity: 0; pointer-events: none;' : ''}
+        ${img.clickable ? 'cursor: pointer;' : ''}
+      `;
+      if (img.clickable) {
+        el.addEventListener('click', () => {
+          this.jsPsych.pluginAPI.clearAllTimeouts();
+          display_element.innerHTML = '';
+          this.jsPsych.finishTrial({ response: img.id, rt: 0 });
+        });
+      }
+      display_element.appendChild(el);
+      imageElements[img.id] = el;
+
+      if (img.time_onset > 0) {
+        this.jsPsych.pluginAPI.setTimeout(() => {
+          el.style.opacity = '1';
+          el.style.pointerEvents = '';
+        }, img.time_onset);
+      }
+      if (img.time_offset > 0) {
+        this.jsPsych.pluginAPI.setTimeout(() => {
+          el.style.opacity = '0';
+          el.style.pointerEvents = 'none';
+        }, img.time_offset);
+      }
+    }
+
+    // Animations
+    for (const anim of trial.animations ?? []) {
+      const apply = () => {
+        const el = imageElements[anim.image_id];
+        if (!el) return;
+        const dur = anim.duration ?? 1000;
+        if (anim.type === 'wiggle') {
+          el.style.animation = `storybook-wiggle ${dur}ms ease-in-out`;
+          el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
+        } else if (anim.type === 'loom') {
+          el.style.animation = `storybook-loom ${dur}ms ease-in-out`;
+          el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
+        } else if (anim.type === 'fadeIn') {
+          el.style.animation = `storybook-fadeIn ${dur}ms ease-in-out forwards`;
+        } else if (anim.type === 'fadeOut') {
+          el.style.animation = `storybook-fadeOut ${dur}ms ease-in-out forwards`;
+        } else if (anim.type === 'translate') {
+          el.style.transition = `transform ${dur / 2}ms ease-in-out`;
+          el.style.transform = `translate(${anim.x ?? 0}px, ${anim.y ?? 0}px)`;
+          setTimeout(() => {
+            el.style.transform = 'translate(0, 0)';
+            setTimeout(() => { el.style.transition = ''; }, dur / 2);
+          }, dur / 2);
+        }
+      };
+      if ((anim.time_onset ?? 0) > 0) {
+        this.jsPsych.pluginAPI.setTimeout(apply, anim.time_onset);
+      } else {
+        apply();
+      }
     }
 
     // Audio playback (placeholder until team implements full trial rendering)

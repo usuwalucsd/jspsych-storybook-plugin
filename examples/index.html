@@ -29,39 +29,64 @@
     choices: ['Begin'],
   };
 
+  const BUNNY_SRC = 'https://pixijs.com/assets/bunny.png';
+
   const pages = [
     {
-      images: [{ id: 'bg', src: 'img/background.jpeg', x_pos: 0, y_pos: 0, width: 100, height: 100 }],
-      audio:  [{ src: 'sound/ready.mp3', time_onset: 0 }],
-      highlight: []
+      images: [
+        { id: 'bg',    src: 'img/background.jpeg', x_pos: 0,  y_pos: 0,  width: 100, height: 100 },
+        { id: 'bunny', src: BUNNY_SRC,              x_pos: 42, y_pos: 35, width: 16,  height: 25  },
+      ],
+      audio:      [{ src: 'sound/ready.mp3', time_onset: 0 }],
+      highlight:  [],
+      animations: [{ image_id: 'bunny', type: 'wiggle', duration: 1000, time_onset: 500 }],
     },
     {
-      images: [{ id: 'bg', src: 'img/background.jpeg', x_pos: 0, y_pos: 0, width: 100, height: 100 }],
-      audio:  [{ src: 'sound/bunny2.mp3', time_onset: 300 }],
-      highlight: [{ image_id: 'bg', time_onset: 300, time_offset: 1500 }]
+      images: [
+        { id: 'bg',    src: 'img/background.jpeg', x_pos: 0,  y_pos: 0,  width: 100, height: 100 },
+        { id: 'bunny', src: BUNNY_SRC,              x_pos: 42, y_pos: 35, width: 16,  height: 25  },
+      ],
+      audio:      [{ src: 'sound/bunny2.mp3', time_onset: 300 }],
+      highlight:  [{ image_id: 'bg', time_onset: 300, time_offset: 1500 }],
+      animations: [{ image_id: 'bunny', type: 'loom', duration: 1500, time_onset: 300 }],
     },
     {
-      images: [{ id: 'bg', src: 'img/background.jpeg', x_pos: 0, y_pos: 0, width: 100, height: 100 }],
-      audio:  [{ src: 'sound/bunny1.mp3', time_onset: 0 }],
-      highlight: []
+      images: [
+        { id: 'bg',    src: 'img/background.jpeg', x_pos: 0,  y_pos: 0,  width: 100, height: 100 },
+        { id: 'bunny', src: BUNNY_SRC,              x_pos: 42, y_pos: 35, width: 16,  height: 25  },
+      ],
+      audio:      [{ src: 'sound/bunny1.mp3', time_onset: 0 }],
+      highlight:  [],
+      animations: [{ image_id: 'bunny', type: 'translate', x: 120, y: -60, duration: 1200, time_onset: 400 }],
     },
     {
-      images: [{ id: 'bg', src: 'img/background.jpeg', x_pos: 0, y_pos: 0, width: 100, height: 100 }],
-      audio:  [{ src: 'sound/cat.mp3', time_onset: 0 }],
-      highlight: [{ image_id: 'bg', time_onset: 0, time_offset: 2000 }]
+      images: [
+        { id: 'bg',    src: 'img/background.jpeg', x_pos: 0,  y_pos: 0,  width: 100, height: 100 },
+        { id: 'bunny', src: BUNNY_SRC,              x_pos: 42, y_pos: 35, width: 16,  height: 25  },
+      ],
+      audio:      [{ src: 'sound/cat.mp3', time_onset: 0 }],
+      highlight:  [{ image_id: 'bg', time_onset: 0, time_offset: 2000 }],
+      animations: [{ image_id: 'bunny', type: 'fadeOut', duration: 800, time_onset: 0 },
+                   { image_id: 'bunny', type: 'fadeIn',  duration: 800, time_onset: 900 }],
     },
     {
-      images: [{ id: 'bg', src: 'img/background.jpeg', x_pos: 0, y_pos: 0, width: 100, height: 100 }],
-      audio:  [{ src: 'sound/chimes.mp3', time_onset: 200 }],
-      highlight: []
+      images: [
+        { id: 'bg',    src: 'img/background.jpeg', x_pos: 0,  y_pos: 0,  width: 100, height: 100 },
+        { id: 'bunny', src: BUNNY_SRC,              x_pos: 42, y_pos: 35, width: 16,  height: 25  },
+      ],
+      audio:      [{ src: 'sound/chimes.mp3', time_onset: 200 }],
+      highlight:  [],
+      animations: [{ image_id: 'bunny', type: 'wiggle', duration: 800, time_onset: 200 },
+                   { image_id: 'bunny', type: 'loom',   duration: 800, time_onset: 1200 }],
     },
   ];
 
   const timeline = pages.map((page, i) => ({
     type: jsPsychStorybook,
-    images:    page.images,
-    audio:     page.audio,
-    highlight: page.highlight,
+    images:     page.images,
+    audio:      page.audio,
+    highlight:  page.highlight,
+    animations: page.animations,
     show_progress_bar: true,
     total_pages:       TOTAL_PAGES,
     pages_completed:   i,
