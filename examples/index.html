@@ -57,7 +57,8 @@
       ],
       audio:      [{ src: 'sound/bunny1.mp3', time_onset: 0 }],
       highlight:  [],
-      animations: [{ image_id: 'bunny', type: 'bounce', duration: 900, time_onset: 400 }],
+      animations: [{ image_id: 'bunny', type: 'bounce',    duration: 900,  time_onset: 400  },
+                   { image_id: 'bunny', type: 'translate', x: 120, y: -60, duration: 1000, time_onset: 1400 }],
     },
     {
       images: [
@@ -89,7 +90,7 @@
     animations: page.animations,
     show_progress_bar: true,
     total_pages:       TOTAL_PAGES,
-    pages_completed:   i,
+    pages_completed:   i + 1,
   }));
 
   jsPsych.run([start_screen, ...timeline]);
