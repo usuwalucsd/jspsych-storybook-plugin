@@ -66,6 +66,34 @@ const info = <const>{
       type: ParameterType.INT,
       default: 0,
     },
+
+    /** An array of objects. Each object represents an audio file that will be played. Each object contains a src, time_onset, and response_allowed_while_playing parameter that will be applied to the question. */
+    audio: {
+      type: ParameterType.COMPLEX,
+      array: true,
+      nested: {
+        /** The path of the audio file to be played.  */
+        src: {
+          type: ParameterType.STRING,
+          default: undefined,
+        },
+
+        /** The time in milliseconds when the audio should start playing. */
+        time_onset : {
+          type: ParameterType.INT,
+          default: 0  
+        },
+
+        /** If true, then responses are allowed while the audio is playing. If false, then the audio must finish playing before the button choices are enabled and a response is accepted. Once the audio has played all the way through, the buttons are enabled and a response is allowed (including while the audio is being re-played via on-screen playback controls). */
+        response_allowed_while_playing: {
+          type: ParameterType.BOOL,
+          default: true,
+        },
+      }
+    }
+
+
+
   },
   data: {
     rt: {
