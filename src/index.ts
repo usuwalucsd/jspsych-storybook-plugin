@@ -232,6 +232,18 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
       this.renderProgressBar(display_element, trial.total_pages, trial.pages_completed);
     }
 
+    // Audio playback (placeholder until team implements full trial rendering)
+    for (const aud of trial.audio ?? []) {
+      const play = () => {
+        this.jsPsych.pluginAPI.getAudioPlayer(aud.src).then(player => player.play());
+      };
+      if (aud.time_onset > 0) {
+        this.jsPsych.pluginAPI.setTimeout(play, aud.time_onset);
+      } else {
+        play();
+      }
+    }
+
     // Placeholder continue button — team will replace with full image/audio rendering
     const btn = document.createElement('button');
     btn.textContent = 'Continue →';
@@ -242,6 +254,7 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
       cursor: pointer; z-index: 1000;
     `;
     btn.addEventListener('click', () => {
+      this.jsPsych.pluginAPI.clearAllTimeouts();
       display_element.innerHTML = '';
       this.jsPsych.finishTrial({ response: 'continue', rt: 0 });
     });
