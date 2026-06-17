@@ -46,4 +46,5 @@ const makeExtensionBrowserConfig = (input, name, destination) => {
 export default [
   ...makeRollupConfig("jsPsychStorybook"),
   ...makeExtensionBrowserConfig("src/extension-progress.ts", "jsPsychExtensionProgress", "extension-progress"),
+  ...makeExtensionBrowserConfig("src/extension-animations.ts", "jsPsychExtensionAnimations", "extension-animations"),
 ];

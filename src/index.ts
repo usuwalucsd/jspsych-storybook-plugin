@@ -120,43 +120,6 @@ const info = <const>{
       }
     },
 
-    /** An array of animations to apply to images. Each object contains image_id, type, time_onset, duration, and optional x/y for translate. */
-    animations: {
-      type: ParameterType.COMPLEX,
-      array: true,
-      nested: {
-        /** The ID of the image to animate. Must match an ID in the images array. */
-        image_id: {
-          type: ParameterType.STRING,
-          default: undefined,
-        },
-        /** Animation type: 'wiggle', 'loom', 'translate', 'fadeIn', 'fadeOut', 'bounce', 'shake' */
-        type: {
-          type: ParameterType.STRING,
-          default: undefined,
-        },
-        /** Time in milliseconds when the animation starts. */
-        time_onset: {
-          type: ParameterType.INT,
-          default: 0,
-        },
-        /** Duration of the animation in milliseconds. */
-        duration: {
-          type: ParameterType.INT,
-          default: 1000,
-        },
-        /** X offset in pixels for translate animation. */
-        x: {
-          type: ParameterType.INT,
-          default: 0,
-        },
-        /** Y offset in pixels for translate animation. */
-        y: {
-          type: ParameterType.INT,
-          default: 0,
-        },
-      },
-    },
   },
   data: {
 
@@ -191,58 +154,12 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
 
   constructor(private jsPsych: JsPsych) {}
 
-  private injectAnimationStyles(): void {
-    if (document.getElementById('storybook-animation-keyframes')) return;
-    const style = document.createElement('style');
-    style.id = 'storybook-animation-keyframes';
-    style.textContent = `
-      @keyframes storybook-wiggle {
-        0%, 100% { transform: rotate(0deg); }
-        15%       { transform: rotate(-12deg); }
-        30%       { transform: rotate(12deg); }
-        45%       { transform: rotate(-8deg); }
-        60%       { transform: rotate(8deg); }
-        75%       { transform: rotate(-4deg); }
-        90%       { transform: rotate(4deg); }
-      }
-      @keyframes storybook-loom {
-        0%, 100% { transform: scale(1); }
-        50%      { transform: scale(1.6); }
-      }
-      @keyframes storybook-fadeIn {
-        from { opacity: 0; }
-        to   { opacity: 1; }
-      }
-      @keyframes storybook-fadeOut {
-        from { opacity: 1; }
-        to   { opacity: 0; }
-      }
-      @keyframes storybook-shake {
-        0%, 100% { transform: translateX(0); }
-        15%      { transform: translateX(-18px); }
-        30%      { transform: translateX(18px); }
-        45%      { transform: translateX(-14px); }
-        60%      { transform: translateX(14px); }
-        75%      { transform: translateX(-8px); }
-        88%      { transform: translateX(8px); }
-      }
-      @keyframes storybook-bounce {
-        0%, 100% { transform: translateY(0); }
-        25%      { transform: translateY(-60px); }
-        50%      { transform: translateY(0); }
-        65%      { transform: translateY(-30px); }
-        80%      { transform: translateY(0); }
-        90%      { transform: translateY(-12px); }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
   private renderImages(display_element: HTMLElement, trial: TrialType<Info>): Record<string, HTMLImageElement> {
     const imageElements: Record<string, HTMLImageElement> = {};
     for (const img of trial.images ?? []) {
       const el = document.createElement('img');
       el.src = img.src;
+      el.dataset.imageId = img.id;
       el.style.cssText = `
         position: absolute;
         left: ${img.x_pos}%;
@@ -279,50 +196,8 @@ class StorybookPlugin implements JsPsychPlugin<Info> {
     return imageElements;
   }
 
-  private applyAnimations(trial: TrialType<Info>, imageElements: Record<string, HTMLImageElement>): void {
-    for (const anim of trial.animations ?? []) {
-      const apply = () => {
-        const el = imageElements[anim.image_id];
-        if (!el) return;
-        const dur = anim.duration ?? 1000;
-        if (anim.type === 'wiggle') {
-          el.style.animation = `storybook-wiggle ${dur}ms ease-in-out`;
-          el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
-        } else if (anim.type === 'loom') {
-          el.style.animation = `storybook-loom ${dur}ms ease-in-out`;
-          el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
-        } else if (anim.type === 'fadeIn') {
-          el.style.animation = `storybook-fadeIn ${dur}ms ease-in-out forwards`;
-        } else if (anim.type === 'fadeOut') {
-          el.style.animation = `storybook-fadeOut ${dur}ms ease-in-out forwards`;
-        } else if (anim.type === 'shake') {
-          el.style.animation = `storybook-shake ${dur}ms ease-in-out`;
-          el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
-        } else if (anim.type === 'bounce') {
-          el.style.animation = `storybook-bounce ${dur}ms ease-in-out`;
-          el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
-        } else if (anim.type === 'translate') {
-          el.style.transition = `transform ${dur / 2}ms ease-in-out`;
-          el.style.transform = `translate(${anim.x ?? 0}px, ${anim.y ?? 0}px)`;
-          setTimeout(() => {
-            el.style.transform = 'translate(0, 0)';
-            setTimeout(() => { el.style.transition = ''; }, dur / 2);
-          }, dur / 2);
-        }
-      };
-      if ((anim.time_onset ?? 0) > 0) {
-        this.jsPsych.pluginAPI.setTimeout(apply, anim.time_onset);
-      } else {
-        apply();
-      }
-    }
-  }
-
   trial(display_element: HTMLElement, trial: TrialType<Info>) {
-    this.injectAnimationStyles();
-
-    const imageElements = this.renderImages(display_element, trial);
-    this.applyAnimations(trial, imageElements);
+    this.renderImages(display_element, trial);
 
     // Audio playback
     for (const aud of trial.audio ?? []) {
