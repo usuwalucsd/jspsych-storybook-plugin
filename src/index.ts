@@ -1,5 +1,6 @@
 import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from "jspsych";
-
+import { AudioPlayerInterface } from "./AudioPlayer";
+import autoBind from "auto-bind";
 import { version } from "../package.json";
 
 const info = <const>{
