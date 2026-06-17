@@ -30,6 +30,7 @@ const info = <const>{
     images: {
       type: ParameterType.COMPLEX,
       array: true,
+      default: [],
       nested: {
         /** unique ID for this image. This must not have any spaces or special characters. */
         id: {
@@ -91,6 +92,7 @@ const info = <const>{
     highlight: {
       type: ParameterType.COMPLEX,
       array: true,
+      default: [],
       nested: {
         /** The ID of the image to be highlighted. This must match the ID of one of the images in the images array. */
         image_id: {
@@ -110,16 +112,16 @@ const info = <const>{
         }, 
         
         /** The time in milliseconds when the image should stop being highlighted. */
-        time_offset : {
+        duration : {
           type: ParameterType.INT,
           default: 0  
         }, 
-        
       }
     },
     
     animations: {
       type: ParameterType.COMPLEX,
+      default: [],
       array: true,
       nested: {
         /** The ID of the image to be animated. This must match the ID of one of the images in the images array. */
