@@ -326,9 +326,14 @@ const info = <const>{
       this.trial_complete = resolve;
     });
     
-    // with no audio there is nothing to wait for, so end immediately
+    // with no audio, end once the last image's display finishes (time_onset + duration);
+    // images with no duration don't have a natural end time, so they don't count here
     if (this.nClips === 0) {
-      this.end_trial();
+      const lastImageEnd = trial.images.reduce((maxEnd, image) => {
+        if (image.duration === null) return maxEnd;
+        return Math.max(maxEnd, image.time_onset + image.duration);
+      }, 0);
+      this.jsPsych.pluginAPI.setTimeout(() => this.end_trial(), lastImageEnd);
     }
     
     return trial_promise;
