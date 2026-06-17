@@ -31,30 +31,27 @@
     const trial = {
       type: jsPsychStorybook,
       background_image: "img/background.jpeg",
-      images: [{ id: "bg", src: "img/background.jpeg" }],
-      width: 70, 
-      images: [], 
-      audio: [], 
+      width: 70,
+      images: [],
       highlight: [],
-      previous_button: {
-        button_visible: true,
-        button_text: "Previous"
-      }, 
-      replay_button: {
-        button_visible: true,
-        button_text: "Replay"
-      },
-      next_button: {
-        button_visible: true,
-        button_text: "Next"
-      }, 
+      animations: [],
+      previous_button: { button_visible: true, button_text: "Previous" },
+      replay_button: { button_visible: true, button_text: "Replay" },
+      next_button: { button_visible: true, button_text: "Next" },
+
       // onsets = previous clip's exact end + 2000ms, so every gap is 2s
-      // (exact durations in ms: ready 610, bunny2 8826, bunny1 5723, chimes 6015)
+      // (exact durations in ms: ready 610, chimes 6015, arlo-hi 3251,
+      //  sarah-hi 3571, mom-hi 3611, dad-hi 1891)
       audio: [
         { src: "sound/ready.mp3", time_onset: 0 },
-        { src: "sound/bunny2.mp3", time_onset: 2610 },
-        { src: "sound/bunny1.mp3", time_onset: 13436 },
-        { src: "sound/chimes.mp3", time_onset: 21159 },
+        { src: "sound/chimes.mp3", time_onset: 2610 },
+        { src: "sound/arlo-hi.mp3", time_onset: 10625 },
+        { src: "sound/chimes.mp3", time_onset: 15876 },
+        { src: "sound/sarah-hi.mp3", time_onset: 23891 },
+        { src: "sound/chimes.mp3", time_onset: 29462 },
+        { src: "sound/mom-hi.mp3", time_onset: 37477 },
+        { src: "sound/chimes.mp3", time_onset: 43088 },
+        { src: "sound/dad-hi.mp3", time_onset: 51103 },
       ],
     };
 

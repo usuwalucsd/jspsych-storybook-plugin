@@ -33,6 +33,7 @@ const info = <const>{
 
     previous_button: {
       type: ParameterType.COMPLEX,
+      default: { button_text: "Previous", button_visible: true },
       nested: {
         button_text: {
           type: ParameterType.STRING,
@@ -46,6 +47,7 @@ const info = <const>{
     },
     replay_button: {
       type: ParameterType.COMPLEX,
+      default: { button_text: "Replay", button_visible: true },
       nested: {
         button_text: {
           type: ParameterType.STRING,
@@ -59,6 +61,7 @@ const info = <const>{
     },
     next_button: {
       type: ParameterType.COMPLEX,
+      default: { button_text: "Next", button_visible: true },
       nested: {
         button_text: {
           type: ParameterType.STRING,
@@ -402,7 +405,7 @@ const info = <const>{
       });
     }
     display_element.appendChild(buttonGroupElement);
-    
+
     // start each clip at its scheduled onset (or immediately if time_onset is 0)
     clips.forEach((clip, i) => {
       const player = this.audioPlayers[i];
