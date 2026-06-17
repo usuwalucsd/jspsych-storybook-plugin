@@ -11,7 +11,7 @@ const info = <const>{
     /** Background image file path. */
     background_image : {
       type: ParameterType.STRING,
-      default: null,
+      default: "",
     },
     
     /** The width of the background image in percentage. */
@@ -276,92 +276,89 @@ const info = <const>{
       this.startTime = this.context.currentTime;
     }
     
-    // // display_element.innerHTML = "<p>This is a placeholder for the storybook plugin. The plugin is still in development, but you can see the progress on the GitHub repository:</p><p><a href='https://github.com/jspsych/plugin-storybook' target='_blank'>https://github.com/jspsych/plugin-storybook</a></p>";
-    // const stimulusEvent = document.createElement("div"); 
-    // stimulusEvent.id = "jspsych-storybook-stimulus-event";
-    // stimulusEvent.innerHTML = "<p>This is a placeholder for the storybook plugin. The plugin is still in development, but you can see the progress on the GitHub repository:</p><p><a href='https://github.com/jspsych/plugin-storybook' target='_blank'>https://github.com/jspsych/plugin-storybook</a></p>";
-    // display_element.appendChild(stimulusEvent);
     
-    const calculateImageDimensions = (image: HTMLImageElement): [number, number] => {
-      let width: number, height: number;
-      
-      // Convert vw/vh percentages to pixel values
-      const vwToPx = (vw: number) => (vw / 100) * window.innerWidth;
-      const vhToPx = (vh: number) => (vh / 100) * window.innerHeight;
-      
-      if (trial.height == null && trial.width == null) {
-        width = image.naturalWidth;
-        height = image.naturalHeight;
-      } else if (trial.width !== null && trial.height == null) {
-        width = vwToPx(trial.width);
-        height = image.naturalHeight * (width / image.naturalWidth);
-      } else if (trial.height !== null && trial.width == null) {
-        height = vhToPx(trial.height);
-        width = image.naturalWidth * (height / image.naturalHeight);
-      } else {
-        width = vwToPx(trial.width);
-        height = vhToPx(trial.height);
-      }
-      
-      return [width, height];
-    };
     
     display_element.innerHTML = "";
-    let stimulusElement: HTMLElement;
 
-    if (trial.background_image === null) {
-      const div = document.createElement("div");
-      div.style.margin = "0";
-      div.style.padding = "0";
-      if (trial.width !== null) {
-        div.style.width = `${trial.width}vw`;
+
+    const containerDiv = document.createElement("div");
+    containerDiv.id = "jspsych-storybook-background-image";
+    containerDiv.style.display = "block";
+    containerDiv.style.position = "relative";
+    containerDiv.style.overflow = "hidden";
+
+
+    if (trial.background_image !== "") {
+      if (trial.width === null && trial.height === null) {
+        containerDiv.style.width = "100vw";
+        containerDiv.style.height = "100vh";
+      } else if (trial.width !== null && trial.height === null) {
+        containerDiv.style.width = `${trial.width}vw`;
+        // height preserves aspect ratio — set once image loads
+        const img = new Image();
+        img.src = trial.background_image;
+        img.onload = () => {
+          const aspectRatio = img.naturalWidth / img.naturalHeight;
+          const widthPx = (trial.width / 100) * window.innerWidth;
+          containerDiv.style.height = `${(widthPx / aspectRatio / window.innerHeight) * 100}vh`;
+        };
+      } else if (trial.height !== null && trial.width === null) {
+        containerDiv.style.height = `${trial.height}vh`;
+        const img = new Image();
+        img.src = trial.background_image;
+        img.onload = () => {
+          const aspectRatio = img.naturalWidth / img.naturalHeight;
+          const heightPx = (trial.height / 100) * window.innerHeight;
+          containerDiv.style.width = `${(heightPx * aspectRatio / window.innerWidth) * 100}vw`;
+        };
+      } else {
+        containerDiv.style.width = `${trial.width}vw`;
+        containerDiv.style.height = `${trial.height}vh`;
       }
-      if (trial.height !== null) {
-        div.style.height = `${trial.height}vh`;
-      }
-      stimulusElement = div;
+
+
+      const bgImg = document.createElement("img");
+      bgImg.src = trial.background_image;
+      bgImg.style.position = "relative";  // takes up space, sizes the container
+      bgImg.style.display = "block";
+      bgImg.style.width = "100%";
+      bgImg.style.height = "100%";
+      containerDiv.appendChild(bgImg);
     } else {
-      const image = new Image();
-      const canvas = document.createElement("canvas");
-      canvas.style.margin = "0";
-      canvas.style.padding = "0";
-      stimulusElement = canvas;
-
-      const drawImage = () => {
-        const [width, height] = calculateImageDimensions(image);
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-      };
-
-      let hasImageBeenDrawn = false;
-
-      image.onload = () => {
-        if (!hasImageBeenDrawn) {
-          drawImage();
-        }
-      };
-
-      image.src = trial.background_image;
-      if (image.complete && image.naturalWidth !== 0) {
-        drawImage();
-        hasImageBeenDrawn = true;
-      }
+      containerDiv.style.width = trial.width !== null ? `${trial.width}vw` : "100vw";
+      containerDiv.style.height = trial.height !== null ? `${trial.height}vh` : "100vh";
+      containerDiv.style.backgroundColor = "black";
     }
-    
-    stimulusElement.id = "jspsych-storybook-background-image";
-    display_element.appendChild(stimulusElement);
-    
-    // onload event background image
-    // backhround image => start timer image onload 
-    // image onload
-    // for each image in the images array, loop through them, look for any that has a delay (onset time), then set up that time.
-    // helper: jspsych.pluginAPI.setTimeout(() => {function that we wanna run is the one that displays the image}, time) to time the presentation of images and audio based on the time_onset parameter for each stimulus in the trial.
-    // helper: jspsych.pluginAPI.clearAllTimeouts() to clear any timeouts that have been set when the trial ends. 
 
+    display_element.appendChild(containerDiv);
 
-    
-    
+    // overlay images — positioned as % of containerDiv so they scale with it
+    for (const image of trial.images) {
+      const img = document.createElement("img");
+      img.src = image.src;
+      img.id = `jspsych-storybook-image-${image.id}`;
+      img.dataset.imageId = image.id;  // for reference in highlights and animations
+      img.style.position = "absolute";
+      img.style.left = `${image.x_pos}%`;
+      img.style.top = `${image.y_pos}%`;
+      img.style.width = image.width !== null ? `${image.width}%` : "auto";
+      img.style.height = image.height !== null ? `${image.height}%` : "auto";
+      img.style.display = "block";
+
+      // initially hide all images; they will be shown at their specified onset times
+      this.jsPsych.pluginAPI.setTimeout(() => {
+        containerDiv.appendChild(img);
+      }, image.time_onset);
+
+      // if a duration is specified, set a timeout to hide the image after the duration has passed
+      if (image.duration !== null) {
+        this.jsPsych.pluginAPI.setTimeout(() => {
+          img.style.visibility = "hidden";
+        }, image.time_onset + image.duration);
+      }
+
+    }
+
     // we want to set up the previous and replay button here
     // and the next button 
     // and we can set it so that they can show it or not (by changing the parameters)
