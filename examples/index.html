@@ -3,6 +3,7 @@
   <head>
     <title>jsPsychStorybook Example</title>
     <script src="https://unpkg.com/jspsych"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response"></script>
     <!-- Once this plugin package is published, you can load it from a CDN instead:
 <script src="https://unpkg.com/plugin-storybook"></script> -->
     <script src="../dist/index.browser.min.js"></script>
@@ -11,12 +12,33 @@
 
   <body></body>
   <script>
-    const jsPsych = initJsPsych();
+    const jsPsych = initJsPsych({
+      on_finish: () => jsPsych.data.displayData(),
+    });
 
-    const trial = {
-      type: jsPsychStorybook
+    // Browsers block audio until the user interacts with the page, so start
+    // with a button press. This also lets jsPsych preload the audio files.
+    const start = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: "<h1>In Progress</h1><p>Click start, then listen.</p>",
+      choices: ["Start"],
     };
 
-    jsPsych.run([trial])
+    // The storybook trial plays each clip in the `audio` array at its
+    // `time_onset` (ms). The trial ends after the last clip finishes.
+    const story = {
+      type: jsPsychStorybook,
+      images: [{ id: "bg", src: "img/background.jpeg" }],
+      // onsets = previous clip's exact end + 2000ms, so every gap is 2s
+      // (exact durations in ms: ready 610, bunny2 8826, bunny1 5723, chimes 6015)
+      audio: [
+        { src: "sound/ready.mp3", time_onset: 0 },
+        { src: "sound/bunny2.mp3", time_onset: 2610 },
+        { src: "sound/bunny1.mp3", time_onset: 13436 },
+        { src: "sound/chimes.mp3", time_onset: 21159 },
+      ],
+    };
+
+    jsPsych.run([start, story]);
   </script>
 </html>
