@@ -1,10 +1,6 @@
 import { JsPsych, JsPsychPlugin, ParameterType, TrialType } from "jspsych";
 import { AudioPlayerInterface } from "./AudioPlayer";
 import autoBind from "auto-bind";
-<<<<<<< HEAD
-=======
-
->>>>>>> 74c1714 (update)
 import { version } from "../package.json";
 
 const info = <const>{
@@ -15,7 +11,7 @@ const info = <const>{
     /** Background image file path. */
     background_image : {
       type: ParameterType.STRING,
-      default: undefined,
+      default: null,
     },
     
     /** The width of the background image in percentage. */
@@ -98,39 +94,31 @@ const info = <const>{
         },
         
         /** The x position of the image on the screen in percentage. */
-        x_pos: {
+        x_pos : {
           type: ParameterType.INT,
           default: 0
-<<<<<<< HEAD
         }, 
-=======
-        },
->>>>>>> 74c1714 (update)
         
         /** The y position of the image on the screen in percentage. */
-        y_pos: {
+        y_pos : {
           type: ParameterType.INT,
           default: 0
-<<<<<<< HEAD
         }, 
-=======
-        },
->>>>>>> 74c1714 (update)
         
         /** The width of the image in percentage. */
-        width: {
+        width : {
           type: ParameterType.INT,
           default: null
         },
         
         /** The height of the image in percentage. */
-        height: {
+        height : {
           type: ParameterType.INT,
           default: null
         },
         
         /** The time in milliseconds when the image should appear on the screen. */
-        time_onset: {
+        time_onset : {
           type: ParameterType.INT,
           default: 0
         }, 
@@ -147,7 +135,6 @@ const info = <const>{
     highlight: {
       type: ParameterType.COMPLEX,
       array: true,
-      default: [],
       nested: {
         /** The ID of the image to be highlighted. This must match the ID of one of the images in the images array. */
         image_id: {
@@ -156,26 +143,16 @@ const info = <const>{
         },
         
         /** The time in milliseconds when the image should be highlighted. */
-        time_onset: {
+        time_onset : {
           type: ParameterType.INT,
-<<<<<<< HEAD
           default: 0  
         }, 
-=======
-          default: 0
-        },
->>>>>>> 74c1714 (update)
         
         /** The time in milliseconds when the image should stop being highlighted. */
-        time_offset: {
+        time_offset : {
           type: ParameterType.INT,
-<<<<<<< HEAD
           default: 0  
         }, 
-=======
-          default: 0
-        },
->>>>>>> 74c1714 (update)
         
       }
     },
@@ -330,51 +307,60 @@ const info = <const>{
     };
     
     display_element.innerHTML = "";
-    let stimulusElement: HTMLCanvasElement;
-    let canvas: HTMLCanvasElement;
-    
-    const image = new Image();
-    canvas = document.createElement("canvas");
-    canvas.style.margin = "0";
-    canvas.style.padding = "0";
-    stimulusElement = canvas;
-    
-    const drawImage = () => {
-      const [width, height] = calculateImageDimensions(image);
-      canvas.width = width;
-      canvas.height = height;
-      canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-    };
-    
-    let hasImageBeenDrawn = false;
-    
-    // if image wasn't preloaded, then it will need to be drawn whenever it finishes loading
-    image.onload = () => {
-      if (!hasImageBeenDrawn) {
-        drawImage();
+    let stimulusElement: HTMLElement;
+
+    if (trial.background_image === null) {
+      const div = document.createElement("div");
+      div.style.margin = "0";
+      div.style.padding = "0";
+      if (trial.width !== null) {
+        div.style.width = `${trial.width}vw`;
       }
-    };
-    
-    image.src = trial.background_image;
-    if (image.complete && image.naturalWidth !== 0) {
-      // if image has loaded then draw it now (don't rely on img onload function to draw image
-      // when image is in the cache, because that causes a delay in the image presentation)
-      drawImage();
-      hasImageBeenDrawn = true;
+      if (trial.height !== null) {
+        div.style.height = `${trial.height}vh`;
+      }
+      stimulusElement = div;
+    } else {
+      const image = new Image();
+      const canvas = document.createElement("canvas");
+      canvas.style.margin = "0";
+      canvas.style.padding = "0";
+      stimulusElement = canvas;
+
+      const drawImage = () => {
+        const [width, height] = calculateImageDimensions(image);
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+      };
+
+      let hasImageBeenDrawn = false;
+
+      image.onload = () => {
+        if (!hasImageBeenDrawn) {
+          drawImage();
+        }
+      };
+
+      image.src = trial.background_image;
+      if (image.complete && image.naturalWidth !== 0) {
+        drawImage();
+        hasImageBeenDrawn = true;
+      }
     }
     
     stimulusElement.id = "jspsych-storybook-background-image";
     display_element.appendChild(stimulusElement);
     
     // onload event background image
-    // background image => start timer image onload 
+    // backhround image => start timer image onload 
     // image onload
     // for each image in the images array, loop through them, look for any that has a delay (onset time), then set up that time.
     // helper: jspsych.pluginAPI.setTimeout(() => {function that we wanna run is the one that displays the image}, time) to time the presentation of images and audio based on the time_onset parameter for each stimulus in the trial.
     // helper: jspsych.pluginAPI.clearAllTimeouts() to clear any timeouts that have been set when the trial ends. 
 
 
-      console.log("Background image loaded, starting trial timer");
+    
     
     // we want to set up the previous and replay button here
     // and the next button 
