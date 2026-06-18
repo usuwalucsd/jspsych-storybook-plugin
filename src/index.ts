@@ -241,7 +241,7 @@ const info = <const>{
     if (this.context !== null) {
       this.startTime = this.context.currentTime;
     }
-    
+     
     display_element.innerHTML = "";
 
     const containerDiv = document.createElement("div");
@@ -294,6 +294,7 @@ const info = <const>{
 
     display_element.appendChild(containerDiv);
 
+    
     // overlay images — positioned as % of containerDiv so they scale with it
     for (const image of trial.images) {
       const img = document.createElement("img");
@@ -320,6 +321,8 @@ const info = <const>{
       }
 
     }
+    //set up highlighting
+    this.highlight();   
 
     // start each clip at its scheduled onset (or immediately if time_onset is 0)
     clips.forEach((clip, i) => {
@@ -350,29 +353,33 @@ const info = <const>{
   }
 
   private highlight = () => {
-    this.params.highlight?.map((obj: TrialType.highlight) => {
-      // literally have no idea if the typing for obj matters or works, but typescript got mad at me otherwise
-      const img = this.display.querySelector<HTMLImageElement>(`#${obj.image_id}`);
+    this.params.highlight?.map((obj) => {
+      const applyHighlight = () => {
+        const img = this.display.querySelector<HTMLImageElement>(
+          `#jspsych-storybook-image-${obj.image_id}`
+        );
+
+        if (!img) {
+          return;
+        }
+
+        img.style.outline = obj.style;
+
+        if (obj.duration > 0) {
+          this.jsPsych.pluginAPI.setTimeout(() => {
+            img.style.outline = null
+          }, obj.duration);
+        }
+      };
 
       if (obj.time_onset > 0) {
-        this.jsPsych.pluginAPI.setTimeout(() => {
-          img!.style.border = obj.style
-          if (obj.time_offset > 0) {
-            this.jsPsych.pluginAPI.setTimeout(() => {
-                img!.removeAttribute('style')
-              }, obj.time_offset);
-          };
-        }, obj.time_onset);
+        this.jsPsych.pluginAPI.setTimeout(applyHighlight, obj.time_onset);
       } else {
-        if (obj.time_offset > 0) {
-          this.jsPsych.pluginAPI.setTimeout(() => {
-              img!.removeAttribute('style')
-            }, obj.time_offset);
-        };
-        img!.style.border = obj.style
-      };
+        // still defer to give the image a chance to land in the DOM
+        this.jsPsych.pluginAPI.setTimeout(applyHighlight, 0);
+      }
     });
-  }
+  };
 
   // bring a clip to the front: stop whatever is currently playing so only one
   // clip is audible at a time, then start the new one
